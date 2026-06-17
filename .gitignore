@@ -1,0 +1,7 @@
+tasks.db
+__pycache__/
+*.pyc
+*.bat
+*.vbs
+*.service
+.claude/
