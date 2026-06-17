@@ -1,0 +1,382 @@
+[
+  {
+    "id": 6,
+    "title": "Инструмент по просмотру шрифта на экранах",
+    "assignee": "Aza",
+    "done": 1,
+    "position": 5,
+    "created_at": 1779281065.872978,
+    "completed_at": 1779281065.872978,
+    "urgent": 0
+  },
+  {
+    "id": 7,
+    "title": "Рейтинг — переделать категории. Общий — умный рейтинг (по весу/видам/редкости)",
+    "assignee": "Aza",
+    "done": 1,
+    "position": 6,
+    "created_at": 1779281069.9564795,
+    "completed_at": 1779281069.9564795,
+    "urgent": 0
+  },
+  {
+    "id": 8,
+    "title": "Сделать чтобы открывался улов в рейтинге по весу",
+    "assignee": "Aza",
+    "done": 1,
+    "position": 7,
+    "created_at": 1779281074.035489,
+    "completed_at": 1779281074.035489,
+    "urgent": 0
+  },
+  {
+    "id": 9,
+    "title": "Чекнуть как отображаются реки",
+    "assignee": "",
+    "done": 0,
+    "position": 0,
+    "created_at": 1779281076.0841122,
+    "completed_at": 0.0,
+    "urgent": 0
+  },
+  {
+    "id": 11,
+    "title": "Система рекомендаций в ленте",
+    "assignee": "Aza",
+    "done": 1,
+    "position": 9,
+    "created_at": 1779366932.2409294,
+    "completed_at": 1779366932.2409294,
+    "urgent": 0
+  },
+  {
+    "id": 12,
+    "title": "Зум щипком в ленте. 1 в 1 как в инсте",
+    "assignee": "Aza",
+    "done": 1,
+    "position": 10,
+    "created_at": 1779366955.597918,
+    "completed_at": 1779366955.597918,
+    "urgent": 0
+  },
+  {
+    "id": 13,
+    "title": "Убрать чёрный квадрат над клавиатурой при любом поиске. Логбук и лента",
+    "assignee": "Aza",
+    "done": 1,
+    "position": 11,
+    "created_at": 1779366985.990858,
+    "completed_at": 1779366985.990858,
+    "urgent": 0
+  },
+  {
+    "id": 14,
+    "title": "В рейтинге рыбаков расширенная информация по тапу (FLash IQ score)",
+    "assignee": "Aza",
+    "done": 1,
+    "position": 12,
+    "created_at": 1779367029.022576,
+    "completed_at": 1779367029.022576,
+    "urgent": 0
+  },
+  {
+    "id": 15,
+    "title": "Снять лайк двойным тапом в ленте (дополнительно)",
+    "assignee": "Aza",
+    "done": 1,
+    "position": 13,
+    "created_at": 1779367054.8973086,
+    "completed_at": 1779367054.8973086,
+    "urgent": 0
+  },
+  {
+    "id": 17,
+    "title": "Светлая тема",
+    "assignee": "",
+    "done": 0,
+    "position": 1,
+    "created_at": 1779371273.099891,
+    "completed_at": 0.0,
+    "urgent": 0
+  },
+  {
+    "id": 19,
+    "title": "Лента «Для вас»: ранжирование (гео/свежесть/лайки/виды) — реализация",
+    "assignee": "Aza",
+    "done": 1,
+    "position": 16,
+    "created_at": 1779393698.9156349,
+    "completed_at": 1779393698.9156349,
+    "urgent": 0
+  },
+  {
+    "id": 20,
+    "title": "Авто-пост публичного улова в ленту + бэкфилл существующих (152)",
+    "assignee": "Aza",
+    "done": 1,
+    "position": 17,
+    "created_at": 1779393698.916634,
+    "completed_at": 1779393698.916634,
+    "urgent": 0
+  },
+  {
+    "id": 21,
+    "title": "Идемпотентный пост улова: лист «Опубликовано в ленте» вместо дубля",
+    "assignee": "Aza",
+    "done": 1,
+    "position": 18,
+    "created_at": 1779393698.916634,
+    "completed_at": 1779393698.916634,
+    "urgent": 0
+  },
+  {
+    "id": 22,
+    "title": "Блок «Рекомендуем подписаться» в ленте",
+    "assignee": "Aza",
+    "done": 1,
+    "position": 19,
+    "created_at": 1779393698.916634,
+    "completed_at": 1779393698.916634,
+    "urgent": 0
+  },
+  {
+    "id": 23,
+    "title": "Заморозка скролла ленты во время зума фото",
+    "assignee": "Aza",
+    "done": 1,
+    "position": 20,
+    "created_at": 1779393698.916634,
+    "completed_at": 1779393698.916634,
+    "urgent": 0
+  },
+  {
+    "id": 24,
+    "title": "Убрать открытие фуллскрина по одиночному тапу в ленте",
+    "assignee": "Aza",
+    "done": 1,
+    "position": 21,
+    "created_at": 1779393698.916634,
+    "completed_at": 1779393698.916634,
+    "urgent": 0
+  },
+  {
+    "id": 25,
+    "title": "Фикс: список постов профиля открывается с нажатого поста",
+    "assignee": "Aza",
+    "done": 1,
+    "position": 22,
+    "created_at": 1779393698.916634,
+    "completed_at": 1779393698.916634,
+    "urgent": 0
+  },
+  {
+    "id": 26,
+    "title": "Фикс: системная «назад» не сворачивает приложение (root navigator)",
+    "assignee": "Aza",
+    "done": 1,
+    "position": 23,
+    "created_at": 1779393698.916634,
+    "completed_at": 1779393698.916634,
+    "urgent": 0
+  },
+  {
+    "id": 27,
+    "title": "Pull-to-refresh свайпом вниз (профиль, подписчики/подписки)",
+    "assignee": "Aza",
+    "done": 1,
+    "position": 24,
+    "created_at": 1779393698.916634,
+    "completed_at": 1779393698.916634,
+    "urgent": 0
+  },
+  {
+    "id": 28,
+    "title": "кнопка назад по единому стандарту",
+    "assignee": "",
+    "done": 0,
+    "position": 2,
+    "created_at": 1779805683.6651273,
+    "completed_at": 0.0,
+    "urgent": 0
+  },
+  {
+    "id": 29,
+    "title": "голосовые в основном чате",
+    "assignee": "",
+    "done": 0,
+    "position": 3,
+    "created_at": 1779805733.3460655,
+    "completed_at": 0.0,
+    "urgent": 1
+  },
+  {
+    "id": 30,
+    "title": "рекомендуем подписаться - возможность скрыть раздел (Лента)",
+    "assignee": "",
+    "done": 0,
+    "position": 4,
+    "created_at": 1779805778.4190016,
+    "completed_at": 0.0,
+    "urgent": 1
+  },
+  {
+    "id": 31,
+    "title": "Если юзер не добавил фото улова - единую красивую картинку вместо фото",
+    "assignee": "",
+    "done": 0,
+    "position": 5,
+    "created_at": 1779805804.5545974,
+    "completed_at": 0.0,
+    "urgent": 0
+  },
+  {
+    "id": 32,
+    "title": "продумать верификацию улова(формулы и тд)",
+    "assignee": "",
+    "done": 0,
+    "position": 6,
+    "created_at": 1779805829.1872454,
+    "completed_at": 0.0,
+    "urgent": 0
+  },
+  {
+    "id": 33,
+    "title": "сделать визард (гайд) при первом запуске",
+    "assignee": "",
+    "done": 0,
+    "position": 7,
+    "created_at": 1779805857.9238503,
+    "completed_at": 0.0,
+    "urgent": 0
+  },
+  {
+    "id": 34,
+    "title": "сделать гайд по приложению",
+    "assignee": "",
+    "done": 0,
+    "position": 8,
+    "created_at": 1779805867.0833008,
+    "completed_at": 0.0,
+    "urgent": 0
+  },
+  {
+    "id": 36,
+    "title": "Региональный клуб",
+    "assignee": "Aleksandr",
+    "done": 1,
+    "position": 9,
+    "created_at": 1779877742.2409647,
+    "completed_at": 1779957054.3038368,
+    "urgent": 1
+  },
+  {
+    "id": 37,
+    "title": "По видам рыб клуб",
+    "assignee": "Aleksandr",
+    "done": 0,
+    "position": 10,
+    "created_at": 1779877753.7826197,
+    "completed_at": 0.0,
+    "urgent": 1
+  },
+  {
+    "id": 38,
+    "title": "По способу ловли клуб",
+    "assignee": "",
+    "done": 0,
+    "position": 12,
+    "created_at": 1779877766.261907,
+    "completed_at": 0.0,
+    "urgent": 1
+  },
+  {
+    "id": 39,
+    "title": "По водоёмам клуб (убрать)",
+    "assignee": "Aleksandr",
+    "done": 1,
+    "position": 11,
+    "created_at": 1779877772.9360406,
+    "completed_at": 1779881281.732092,
+    "urgent": 1
+  },
+  {
+    "id": 40,
+    "title": "По Командам",
+    "assignee": "",
+    "done": 0,
+    "position": 13,
+    "created_at": 1779877777.499662,
+    "completed_at": 0.0,
+    "urgent": 1
+  },
+  {
+    "id": 41,
+    "title": "Поправить сегодня на воде - должны отображаться добавленные уловы в клуб за последние 24 часа",
+    "assignee": "",
+    "done": 0,
+    "position": 14,
+    "created_at": 1779878204.6297336,
+    "completed_at": 0.0,
+    "urgent": 1
+  },
+  {
+    "id": 42,
+    "title": "Проверить чат в выездах",
+    "assignee": "",
+    "done": 0,
+    "position": 15,
+    "created_at": 1779878528.2552605,
+    "completed_at": 0.0,
+    "urgent": 1
+  },
+  {
+    "id": 43,
+    "title": "3 точки в выездах крашит и удаляет выезд - фикс. Удалить и поделиться",
+    "assignee": "",
+    "done": 1,
+    "position": 16,
+    "created_at": 1779878582.739698,
+    "completed_at": 1779957038.4444811,
+    "urgent": 1
+  },
+  {
+    "id": 44,
+    "title": "Фильтр выездов - удалить",
+    "assignee": "Aleksandr",
+    "done": 1,
+    "position": 17,
+    "created_at": 1779878619.928008,
+    "completed_at": 1779957036.676048,
+    "urgent": 1
+  },
+  {
+    "id": 45,
+    "title": "В региональном клубе автозаполнять водоём после клика (и ограничить регион)",
+    "assignee": "",
+    "done": 0,
+    "position": 18,
+    "created_at": 1779879300.1830952,
+    "completed_at": 0.0,
+    "urgent": 1
+  },
+  {
+    "id": 46,
+    "title": "Убрать иконку часов из обстановки или",
+    "assignee": "",
+    "done": 0,
+    "position": 25,
+    "created_at": 1779879461.7418458,
+    "completed_at": 0.0,
+    "urgent": 1
+  },
+  {
+    "id": 47,
+    "title": "как считается индекс клева. продумать формулу",
+    "assignee": "",
+    "done": 0,
+    "position": 26,
+    "created_at": 1779879629.4098406,
+    "completed_at": 0.0,
+    "urgent": 1
+  }
+]

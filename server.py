@@ -14,7 +14,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
-DB_PATH = Path(__file__).with_name("tasks.db")
+DB_PATH = Path(__import__("os").environ.get("DB_PATH", str(Path(__file__).with_name("tasks.db"))))
 PORT = int(__import__("os").environ.get("PORT", 8777))
 _lock = threading.Lock()
 
@@ -23,6 +23,26 @@ def db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def seed_db_if_empty():
+    seed = Path(__file__).with_name("seed_data.json")
+    if not seed.exists():
+        return
+    with db() as conn:
+        count = conn.execute("SELECT COUNT(*) FROM tasks").fetchone()[0]
+        if count > 0:
+            return
+    import json
+    tasks = json.loads(seed.read_text(encoding="utf-8"))
+    with _lock, db() as conn:
+        for t in tasks:
+            conn.execute(
+                "INSERT INTO tasks (id,title,assignee,done,position,created_at,completed_at,urgent) VALUES (?,?,?,?,?,?,?,?)",
+                (t["id"], t["title"], t["assignee"], t["done"], t["position"],
+                 t["created_at"], t["completed_at"], t["urgent"]),
+            )
+        conn.commit()
 
 
 def init_db():
@@ -628,6 +648,7 @@ setInterval(poll, 1500);
 
 def main():
     init_db()
+    seed_db_if_empty()
     srv = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
     # Под pythonw (без консоли) sys.stdout = None → print() упал бы. Защищаемся.
     try:

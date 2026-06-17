@@ -1,4 +1,5 @@
 tasks.db
+# seed_data.json intentionally tracked
 __pycache__/
 *.pyc
 *.bat
