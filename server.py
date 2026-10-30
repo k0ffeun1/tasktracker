@@ -61,6 +61,8 @@ def init_db():
         """)
         # Миграция старых БД: добавить новые столбцы, если их нет
         cols = [r[1] for r in conn.execute("PRAGMA table_info(tasks)").fetchall()]
+        if "archived" not in cols:
+            conn.execute("ALTER TABLE tasks ADD COLUMN archived INTEGER NOT NULL DEFAULT 0")
         if "completed_at" not in cols:
             conn.execute("ALTER TABLE tasks ADD COLUMN completed_at REAL NOT NULL DEFAULT 0")
         if "urgent" not in cols:
@@ -139,6 +141,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
         self.wfile.write(body)
@@ -148,6 +151,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(body)
 
@@ -275,6 +279,15 @@ HTML = r"""<!DOCTYPE html>
   .menu input:focus { border-color:var(--accent); }
   .muted { color:var(--txt2); font-size:11px; padding:4px 9px; }
   .footer { text-align:center; color:#b9bcc2; font-size:11px; margin-top:14px; }
+  .sync-status { margin:-8px 0 14px; font-size:13px; color:var(--txt2); }
+  .sync-status[data-state="error"] { color:#c53030; font-weight:600; }
+  .sync-status[data-state="ok"] { color:#16833b; }
+  body[data-saving="true"] .check,
+  body[data-saving="true"] .flag,
+  body[data-saving="true"] .handle,
+  body[data-saving="true"] .del,
+  body[data-saving="true"] .as-chip,
+  body[data-saving="true"] .title { pointer-events:none; opacity:.6; }
   /* секции завершённых по дням */
   .day { margin-top:14px; }
   .day-head { display:flex; align-items:center; gap:8px; padding:8px 6px; cursor:pointer; color:var(--txt2); font-size:12.5px; font-weight:700; user-select:none; }
@@ -306,6 +319,7 @@ HTML = r"""<!DOCTYPE html>
 <div class="wrap">
   <h1><span class="dot"></span> Задачи Fish App</h1>
   <div class="sub" id="sub">Загрузка…</div>
+  <div id="syncStatus" class="sync-status" role="status" aria-live="polite">Подключение к серверу…</div>
   <div class="card">
     <div class="head">
       <div style="width:22px"></div>
@@ -321,6 +335,10 @@ HTML = r"""<!DOCTYPE html>
     </div>
   </div>
   <div id="doneList"></div>
+  <details id="archive" class="day" hidden>
+    <summary class="day-head">Архив <span id="archiveCount" class="cnt"></span></summary>
+    <div id="archiveList" class="day-card"></div>
+  </details>
   <div class="footer">Реал-тайм обновление каждые 1.5с · данные в tasks.db</div>
 </div>
 
@@ -337,23 +355,87 @@ let menuOpen = null;        // id задачи с открытым меню ис
 let dragId = null;          // id перетаскиваемой задачи
 let dragUrgent = null;      // секция перетаскиваемой задачи (urgent)
 let dropBefore = true;      // вставить выше/ниже целевой строки
+let saving = false;
+let saveError = false;
+let mutationRevision = 0;
+let pollRevision = 0;
+let polling = false;
+let pollQueued = false;
+
+function syncStatus(message, state){
+  const el = document.getElementById('syncStatus');
+  el.textContent = message; el.dataset.state = state;
+}
 
 async function api(method, path, body){
-  const r = await fetch('/api'+path, {method, headers:{'Content-Type':'application/json'}, body: body?JSON.stringify(body):undefined});
-  return r.ok ? r.json() : null;
+  const controller = new AbortController();
+  const timeout = setTimeout(()=>controller.abort(), 10000);
+  try {
+    const r = await fetch('/api'+path, {method, signal:controller.signal, headers:{'Content-Type':'application/json'}, body: body?JSON.stringify(body):undefined});
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    return await r.json();
+  } finally { clearTimeout(timeout); }
+}
+
+async function saveChange(method, path, body, apply){
+  if (saving) return false;
+  saving = true; saveError = false; mutationRevision++;
+  document.body.dataset.saving = 'true';
+  addBtn.disabled = true;
+  syncStatus('Сохраняем…', 'saving');
+  try {
+    const result = await api(method, path, body);
+    apply(result);
+    lastJSON = ''; render();
+    syncStatus('Сохранено на сервере', 'ok');
+    return true;
+  } catch(e) {
+    saveError = true;
+    syncStatus('Сохранение не подтверждено. Проверьте связь, обновите страницу и проверьте задачу.', 'error');
+    // При неудачном редактировании возвращаем подтверждённые данные.
+    render();
+    return false;
+  } finally {
+    saving = false; document.body.dataset.saving = 'false';
+    addBtn.disabled = !addInput.value.trim();
+    poll();
+  }
+}
+
+function acceptTask(row){
+  tasks = tasks.map(t => t.id === row.id ? row : t);
 }
 
 async function poll(){
+  if (saving) return;
+  if (polling) {pollQueued = true; return;}
+  polling = true;
+  const revision = mutationRevision;
+  const request = ++pollRevision;
+  const controller = new AbortController();
+  const timeout = setTimeout(()=>controller.abort(), 10000);
   try {
-    const data = await (await fetch('/api/tasks')).json();
+    const response = await fetch('/api/tasks', {cache:'no-store', signal:controller.signal});
+    if (!response.ok) throw new Error('HTTP '+response.status);
+    const data = await response.json();
+    if (!Array.isArray(data)) throw new Error('Invalid tasks response');
+    if (saving || revision !== mutationRevision || request !== pollRevision) return;
     const j = JSON.stringify(data);
     if (j !== lastJSON && editingId===null && menuOpen===null){
       lastJSON = j; tasks = data; render();
     } else if (j !== lastJSON) {
       // есть локальное редактирование — обновим данные, но не перерисуем грубо
-      tasks = data; lastJSON = j;
+      tasks = data;
     }
-  } catch(e){}
+    if (!saveError) syncStatus('Синхронизировано с сервером', 'ok');
+  } catch(e){
+    if (!saving && revision === mutationRevision && request === pollRevision && !saveError)
+      syncStatus('Нет связи с сервером. Сохранение изменений недоступно.', 'error');
+  } finally {
+    clearTimeout(timeout);
+    polling = false;
+    if (pollQueued) {pollQueued = false; poll();}
+  }
 }
 
 function knownAssignees(){
@@ -460,35 +542,43 @@ function makeRow(t){
 }
 
 async function toggleUrgent(t){
-  t.urgent = t.urgent?0:1;
-  lastJSON=''; render();
-  await api('PATCH', '/tasks/'+t.id, {urgent:t.urgent});
-  poll();
+  await saveChange('PATCH', '/tasks/'+t.id, {urgent:t.urgent?0:1}, acceptTask);
 }
 
 async function doReorder(srcId, targetId, before){
   const src = tasks.find(t=>t.id===srcId);
   if(!src) return;
-  let active = tasks.filter(t=>!t.done && t.id!==srcId);
+  let active = tasks.filter(t=>!t.archived && !t.done && t.id!==srcId);
   const ti = active.findIndex(t=>t.id===targetId);
   if(ti<0) return;
   active.splice(before ? ti : ti+1, 0, src);
-  active.forEach((t,i)=> t.position = i);
-  tasks = active.concat(tasks.filter(t=>t.done));
-  lastJSON=''; render();
-  await api('POST', '/tasks/reorder', {ids: active.map(t=>t.id)});
-  poll();
+  await saveChange('POST', '/tasks/reorder', {ids: active.map(t=>t.id)}, ()=>{
+    active.forEach((t,i)=> t.position = i);
+    tasks = active.concat(tasks.filter(t=>t.done || t.archived));
+  });
 }
 
 function render(){
   const list = document.getElementById('list');
   const doneList = document.getElementById('doneList');
-  const doneCnt = tasks.filter(t=>t.done).length;
-  document.getElementById('sub').textContent = `${tasks.length} задач · ${doneCnt} готово`;
+  const current = tasks.filter(t=>!t.archived);
+  const doneCnt = current.filter(t=>t.done).length;
+  document.getElementById('sub').textContent = `${current.length} задач · ${doneCnt} готово`;
+  const archived = tasks.filter(t=>t.archived);
+  document.getElementById('archive').hidden = archived.length === 0;
+  document.getElementById('archiveCount').textContent = archived.length;
+  const archiveList = document.getElementById('archiveList');
+  archiveList.innerHTML = '';
+  archived.forEach(t=>{
+    const row = document.createElement('div');
+    row.className = 'row'+(t.done?' done':'');
+    row.innerHTML = `<span style="width:22px;flex-shrink:0">${t.done?'✓':'—'}</span><span class="title" style="padding-left:12px">${esc(t.title)}</span><span class="as-name">${esc(t.assignee)}</span>`;
+    archiveList.appendChild(row);
+  });
 
   // Активные — два раздела: «Срочно» и «Не срочно — на будущее»
   list.innerHTML = '';
-  const active = tasks.filter(t=>!t.done);
+  const active = current.filter(t=>!t.done);
   function section(label, cls, items){
     const h = document.createElement('div');
     h.className = 'sec-head '+cls;
@@ -509,7 +599,7 @@ function render(){
   // Завершённые — сгруппированы по дню завершения, сворачиваемые секции
   doneList.innerHTML = '';
   const groups = {};
-  tasks.filter(t=>t.done).forEach(t=>{
+  current.filter(t=>t.done).forEach(t=>{
     const ts = (t.completed_at && t.completed_at>0) ? t.completed_at : t.created_at;
     const k = dayKeyOf(ts);
     (groups[k] = groups[k] || {ts, items:[]}).items.push(t);
@@ -595,30 +685,21 @@ function openAssigneeMenu(e, t){
 document.addEventListener('click', closeMenu);
 
 async function toggleDone(t){
-  t.done = t.done?0:1;
-  t.completed_at = t.done ? (Date.now()/1000) : 0;  // сразу в группу «Сегодня»
-  lastJSON=''; render();
-  await api('PATCH', '/tasks/'+t.id, {done:t.done});
-  poll();
+  await saveChange('PATCH', '/tasks/'+t.id, {done:t.done?0:1}, acceptTask);
 }
 async function saveTitle(t, val){
   val = (val||'').trim();
   if (val === t.title) return;
-  t.title = val; lastJSON='';
-  await api('PATCH', '/tasks/'+t.id, {title:val});
-  poll();
+  await saveChange('PATCH', '/tasks/'+t.id, {title:val}, acceptTask);
 }
 async function setAssignee(t, name){
   closeMenu();
-  t.assignee = name; lastJSON=''; render();
-  await api('PATCH', '/tasks/'+t.id, {assignee:name});
-  poll();
+  await saveChange('PATCH', '/tasks/'+t.id, {assignee:name}, acceptTask);
 }
 async function removeTask(t){
-  t._gone = true;
-  tasks = tasks.filter(x=>x.id!==t.id); lastJSON=''; render();
-  await api('DELETE', '/tasks/'+t.id);
-  poll();
+  await saveChange('DELETE', '/tasks/'+t.id, undefined, ()=>{
+    tasks = tasks.filter(x=>x.id!==t.id);
+  });
 }
 
 const addInput = document.getElementById('addInput');
@@ -627,13 +708,14 @@ const addBtn = document.getElementById('addBtn');
 async function addTask(){
   const v = addInput.value.trim();
   if (!v) return;
-  addInput.value=''; addBtn.disabled = true;
-  const row = await api('POST', '/tasks', {title:v, assignee:''});
-  if (row){ tasks.push(row); lastJSON=''; render(); }
+  await saveChange('POST', '/tasks', {title:v, assignee:''}, row=>{
+    tasks.push(row);
+    if (addInput.value.trim() === v) addInput.value='';
+  });
   addInput.focus();
 }
 
-addInput.addEventListener('input', ()=>{ addBtn.disabled = !addInput.value.trim(); });
+addInput.addEventListener('input', ()=>{ addBtn.disabled = saving || !addInput.value.trim(); });
 addInput.addEventListener('keydown', (e)=>{ if (e.key==='Enter') addTask(); });
 addBtn.addEventListener('click', addTask);
 

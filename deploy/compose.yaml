@@ -1,0 +1,35 @@
+services:
+  tasktracker:
+    image: python:3.11-slim
+    command: ["python3", "-u", "/app/server.py"]
+    user: "33:33"
+    restart: unless-stopped
+    read_only: true
+    environment:
+      DB_PATH: /data/tasks.db
+      PORT: "8777"
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ./server.py:/app/server.py:ro
+      - ./data:/data
+    tmpfs:
+      - /tmp:size=16m
+    networks:
+      fish:
+        aliases:
+          - tasktracker
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8777/api/tasks', timeout=5).read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+networks:
+  fish:
+    external: true
+    name: fish-app_default
